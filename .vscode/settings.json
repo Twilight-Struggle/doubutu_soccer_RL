@@ -1,0 +1,6 @@
+{
+    "python.pythonPath": "/mnt/c/environment/freeresearch/dobutu/dobutuRL/bin/python3",
+    "python.venvPath": "/mnt/c/environment/freeresearch/dobutu",
+    "editor.formatOnSave": true,
+    "python.formatting.provider": "yapf"
+}
