@@ -106,7 +106,8 @@ class Board:
         self.P_now_player = self.P_front if self.turn == FRONTPLAYER else self.P_back
 
     def clone(self):
-        return Board(copy.deepcopy(self.cells))
+        return Board(self.P_front, self.P_back, self.turn,
+                     copy.deepcopy(self.cells))
 
     def turn_piece_dict(self):
         if self.turn == FRONTPLAYER:

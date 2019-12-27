@@ -116,6 +116,9 @@ class MonteCarlo(Player):
     def __init__(self):
         super().__init__()
 
+    def policy(self, Board, legalmoves):
+        pass
+
     def action(self, Board, legalmoves):
         scores = {}
         n = 50
