@@ -117,15 +117,36 @@ class MonteCarlo(Player):
         super().__init__()
 
     def policy(self, Board, legalmoves):
-        pass
+        not_lose = []
+        legalmoves_p = self.parse_action(legalmoves, Board.turn_player())
+        for i, move in enumerate(legalmoves_p):
+            kick_commands = move[1]
+            if kick_commands is None:
+                not_lose.append(i)
+            else:
+                lose_flag = False
+                for last_stop in kick_commands[::-1]:
+                    if last_stop is not None:
+                        if last_stop[0] == -1:
+                            lose_flag = True
+                        elif last_stop[0] == 5:
+                            return legalmoves[i]
+                        break
+                if not lose_flag:
+                    not_lose.append(i)
+        ret_index = not_lose[random.randrange(len(not_lose))]
+        return legalmoves[ret_index]
+
+    def trial(self, Board, act):
+
 
     def action(self, Board, legalmoves):
         scores = {}
-        n = 50
+        n = 100
         for act in legalmoves:
             scores[act] = 0
             for i in range(n):
-                pass
+                scores[act] += self.trial(self, Board, act)
             scores[act] /= n
 
         max_score = max(scores.values())
