@@ -151,9 +151,7 @@ class MonteCarlo(Player):
         while True:
             legal_moves_l = tempboard.legal_moves()
             while True:
-                print(legal_moves_l)
                 action = self.policy(tempboard, legal_moves_l)
-                print(action)
                 success, winner = tempboard.action_parser(action)
                 if success is True:
                     break
