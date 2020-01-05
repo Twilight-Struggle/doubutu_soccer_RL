@@ -44,6 +44,7 @@ class Board:
                 reset_flag = True
         else:
             self.cells = cell
+            self.P_now_player = self.P_front if self.turn == FRONTPLAYER else self.P_back
             reset_flag = False
 
         self.S_ball = BallPiece()
@@ -79,6 +80,8 @@ class Board:
             self.cells[3][1] = self.S_saru_s
             self.cells[4][0] = self.S_risu_s
             self.cells[4][2] = self.S_usa_s
+            self.turn = FRONTPLAYER if random.random() >= 0.0 else BACKPLAYER
+            self.P_now_player = self.P_front if self.turn == FRONTPLAYER else self.P_back
         else:
             for i in range(BOARD_HEIGHT):
                 for j in range(BOARD_WIDTH):
@@ -99,11 +102,13 @@ class Board:
                                 self.cells[i][j] = self.S_risu_f
                             else:
                                 self.cells[i][j] = self.S_risu_s
+                        elif obj.spiece == OYASARU_ID:
+                            if obj.power == FRONTPLAYER:
+                                self.cells[i][j] = self.S_oyasaru_f
+                            else:
+                                self.cells[i][j] = self.S_oyasaru_s
                         elif obj.spiece == BALL_ID:
                             self.cells[i][j] = self.S_ball
-
-        self.turn = FRONTPLAYER if random.random() >= 0.5 else BACKPLAYER
-        self.P_now_player = self.P_front if self.turn == FRONTPLAYER else self.P_back
 
     def clone(self):
         return Board(self.P_front, self.P_back, self.turn,
@@ -246,8 +251,8 @@ class DobutuEnv:
             elif self.Board.turn_player() == BACKPLAYER:
                 now_player = self.back
             while True:
-                actions = now_player.action(self.Board, legal_moves_l)
-                success, winner = self.Board.action_parser(actions)
+                action = now_player.action(self.Board, legal_moves_l)
+                success, winner = self.Board.action_parser(action)
                 if success is True:
                     break
             if winner is not None:
@@ -261,5 +266,6 @@ class DobutuEnv:
 if __name__ == "__main__":
     human = Human()
     rand = Random()
-    env = DobutuEnv(human, rand)
+    monte = MonteCarlo()
+    env = DobutuEnv(human, monte)
     env.progress()

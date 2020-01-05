@@ -117,7 +117,7 @@ class SaruPiece(Piece):
         if len(mypos) != 0:
             if (mypos[0] == 4 and self.power == FRONTPLAYER) or (
                     mypos[0] == 0 and self.power == BACKPLAYER):
-                self.board.cells[mypos[0]][mypos[1]] = self.oyasaru
+                board.cells[mypos[0]][mypos[1]] = self.oyasaru
 
 
 class OyasaruPiece(Piece):
@@ -137,9 +137,9 @@ class OyasaruPiece(Piece):
                 new_x = my_place[0] + dx
                 new_y = my_place[1] + dy
                 if 0 <= new_x <= 4 and 0 <= new_y <= 2:
-                    if self.board.cells[new_x][new_y] is None:
+                    if board.cells[new_x][new_y] is None:
                         legal_l.append((new_x, new_y))
-                    elif self.board.cells[new_x][new_y].spiece == BALL_ID:
+                    elif board.cells[new_x][new_y].spiece == BALL_ID:
                         ball_legal = (new_x, new_y)
         return legal_l, ball_legal
 

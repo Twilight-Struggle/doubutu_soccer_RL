@@ -16,9 +16,9 @@ class Player:
     def __init__(self):
         pass
 
-    def parse_board(self, Board):
+    def parse_board(self, Board, turnplayer):
         cells = []
-        if self.power == BACKPLAYER:
+        if turnplayer == BACKPLAYER:
             for i in range(BOARD_HEIGHT):
                 cells.append(
                     [i for i in Board.cells[BOARD_HEIGHT - 1 - i][::-1]])
@@ -52,6 +52,8 @@ class Player:
                         new_kick_commands.append(new_kick_to)
                 new_action = [new_move_command, new_kick_commands]
                 parsed_legalmoves.append(new_action)
+        else:
+            parsed_legalmoves = legal
         return parsed_legalmoves
 
     def action(self, Board, legalmoves):
@@ -138,18 +140,41 @@ class MonteCarlo(Player):
         return legalmoves[ret_index]
 
     def trial(self, Board, act):
-
+        tempboard = Board.clone()
+        myturn = tempboard.turn_player()
+        success, winner = tempboard.action_parser(act)
+        if winner is not None:
+            if winner == myturn:
+                return 1
+            else:
+                return -1
+        while True:
+            legal_moves_l = tempboard.legal_moves()
+            while True:
+                print(legal_moves_l)
+                action = self.policy(tempboard, legal_moves_l)
+                print(action)
+                success, winner = tempboard.action_parser(action)
+                if success is True:
+                    break
+                else:
+                    print("fuck")
+            if winner is not None:
+                if winner == myturn:
+                    return 1
+                else:
+                    return -1
 
     def action(self, Board, legalmoves):
         scores = {}
         n = 100
-        for act in legalmoves:
-            scores[act] = 0
-            for i in range(n):
-                scores[act] += self.trial(self, Board, act)
-            scores[act] /= n
+        for i, act in enumerate(legalmoves):
+            scores[i] = 0
+            for j in range(n):
+                scores[i] += self.trial(Board, act)
+            scores[i] /= n
 
         max_score = max(scores.values())
-        for act, v in scores.items():
+        for i, v in scores.items():
             if v == max_score:
-                return act
+                return legalmoves[i]
