@@ -80,7 +80,7 @@ class Board:
             self.cells[3][1] = self.S_saru_s
             self.cells[4][0] = self.S_risu_s
             self.cells[4][2] = self.S_usa_s
-            self.turn = FRONTPLAYER if random.random() >= 0.0 else BACKPLAYER
+            self.turn = FRONTPLAYER if random.random() >= 0.5 else BACKPLAYER
             self.P_now_player = self.P_front if self.turn == FRONTPLAYER else self.P_back
         else:
             for i in range(BOARD_HEIGHT):
