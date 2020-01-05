@@ -267,5 +267,6 @@ if __name__ == "__main__":
     human = Human()
     rand = Random()
     monte = MonteCarlo()
-    env = DobutuEnv(monte, monte)
+    monte2 = MonteCarlo()
+    env = DobutuEnv(monte, monte2)
     env.progress()

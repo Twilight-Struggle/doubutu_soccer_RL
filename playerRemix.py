@@ -136,7 +136,13 @@ class MonteCarlo(Player):
                         break
                 if not lose_flag:
                     not_lose.append(i)
-        ret_index = not_lose[random.randrange(len(not_lose))]
+        if len(not_lose) != 0:
+            ret_index = not_lose[random.randrange(len(not_lose))]
+        else:
+            print("Error: not_lose is 0")
+            print(legalmoves)
+            print(legalmoves_p)
+            ret_index = 0
         return legalmoves[ret_index]
 
     def trial(self, Board, act):
