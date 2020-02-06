@@ -151,9 +151,9 @@ class MonteCarlo(Player):
         success, winner = tempboard.action_parser(act)
         if winner is not None:
             if winner == myturn:
-                return 1
+                return 10
             else:
-                return -1
+                return -10
         while True:
             legal_moves_l = tempboard.legal_moves()
             while True:
@@ -171,7 +171,7 @@ class MonteCarlo(Player):
 
     def action(self, Board, legalmoves):
         scores = {}
-        n = 100
+        n = 50
         for i, act in enumerate(legalmoves):
             scores[i] = 0
             for j in range(n):

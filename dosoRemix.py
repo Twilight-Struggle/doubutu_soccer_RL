@@ -73,14 +73,24 @@ class Board:
 
     def reset(self, reset_flag=True):
         if reset_flag is True:
-            self.cells[1][1] = self.S_saru_f
-            self.cells[0][0] = self.S_usa_f
-            self.cells[0][2] = self.S_risu_f
-            self.cells[2][1] = self.S_ball
-            self.cells[3][1] = self.S_saru_s
-            self.cells[4][0] = self.S_risu_s
+            # self.cells[1][1] = self.S_saru_f
+            # self.cells[0][0] = self.S_usa_f
+            # self.cells[0][2] = self.S_risu_f
+            # self.cells[2][1] = self.S_ball
+            # self.cells[3][1] = self.S_saru_s
+            # self.cells[4][0] = self.S_risu_s
+            # self.cells[4][2] = self.S_usa_s
+            # self.turn = FRONTPLAYER if random.random() >= 0.5 else BACKPLAYER
+            # self.P_now_player = self.P_front if self.turn == FRONTPLAYER else self.P_back
+
+            self.cells[0][0] = self.S_saru_f
+            self.cells[1][0] = self.S_usa_f
+            self.cells[1][2] = self.S_risu_f
+            self.cells[2][2] = self.S_ball
+            self.cells[2][1] = self.S_saru_s
+            self.cells[2][0] = self.S_risu_s
             self.cells[4][2] = self.S_usa_s
-            self.turn = FRONTPLAYER if random.random() >= 0.5 else BACKPLAYER
+            self.turn = BACKPLAYER
             self.P_now_player = self.P_front if self.turn == FRONTPLAYER else self.P_back
         else:
             for i in range(BOARD_HEIGHT):
