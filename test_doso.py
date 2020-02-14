@@ -6,7 +6,7 @@ print(sys.version)
 print(sys.path)
 
 import pytest
-
+import copy
 import refact_doso
 
 BOARD_HEIGHT = 5
@@ -55,9 +55,39 @@ def test_piece_where_me(inp, out):
 @pytest.mark.parametrize('inp, out',
                          [(dummyboard.S_usa_s, ([(3, 2), (4, 1)], None)),
                           (dummyboard.S_saru_f, ([(0, 1), (1, 0), (1, 2),
-                                                  (2, 0), (2, 2)], (2, 1)))])
-def test_piece_where_me(inp, out):
+                                                  (2, 0), (2, 2)], (2, 1))),
+                          (S_usa_s, (None, None))])
+def test_piece_can_move(inp, out):
     assert dummyboard.piece_can_move(inp) == out
+
+
+cells2 = []
+for i in range(refact_doso.BOARD_HEIGHT):
+    cells2.append([None for i in range(refact_doso.BOARD_WIDTH)])
+cells2[1][1] = S_saru_f
+cells2[0][0] = S_usa_f
+cells2[0][2] = S_risu_f
+cells2[2][0] = S_ball
+cells2[3][1] = S_saru_s
+cells2[4][0] = S_risu_s
+cells2[4][2] = S_usa_s
+
+dummyboards = refact_doso.Board(None, None, refact_doso.PlayPos.FRONTPLAYER,
+                                cells2)
+
+
+@pytest.mark.parametrize('inp, out', [(dummyboards.S_saru_f, [
+    [[1, 0]], [[0, 0], [1, 0]], [[0, 0], [1, 1]], [[0, 0], [2, 2]],
+    [[0, 0], [0, 1]], [[0, 0], [0, 2], [0, 1]], [[0, 0], [0, 2], [1, 2]],
+    [[0, 0], [0, 2], [2, 2]], [[0, 0], [0, 2], [-1, 2]]
+])])
+def test_piece_can_kick(inp, out):
+    tempcell = copy.deepcopy(dummyboards.cells)
+    kicker_place = dummyboards.where_you(inp)
+    tempcell[kicker_place[0]][kicker_place[1]] = None
+    tempcell[2][0] = 1
+    assert sorted(dummyboards.piece_can_kick(inp, (2, 0),
+                                             tempcell)) == sorted(out)
 
 
 if __name__ == '__main__':

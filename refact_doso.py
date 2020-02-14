@@ -4,15 +4,15 @@
 import numpy as np
 import random
 import copy
+from playerRemix import *
 from enum import Enum, auto
 
 BOARD_HEIGHT = 5
 BOARD_WIDTH = 3
 
 
-class PlayPos(Enum):
-    FRONTPLAYER = auto()
-    BACKPLAYER = auto()
+def printn(inp):
+    print(inp, end="")
 
 
 class PieceID(Enum):
@@ -56,19 +56,13 @@ class Piece():
                 self.identity = "う"
             else:
                 self.identity = "ウ"
-
-
-class Act():
-    def __init__(self, move, kick):
-        self.move_command = move
-        self.kick_command = kick
+        elif self.spiece == PieceID.BALL_ID:
+            self.identity = "ボ"
 
 
 class Board:
-    def __init__(self, front, back, tn=PlayPos.FRONTPLAYER, cell=None):
+    def __init__(self, tn=PlayPos.FRONTPLAYER, cell=None):
         self.turn = tn
-        self.P_front = front
-        self.P_back = back
 
         if cell is None:
             self.cells = []
@@ -77,7 +71,7 @@ class Board:
                 reset_flag = True
         else:
             self.cells = cell
-            self.P_now_player = self.P_front if self.turn == PlayPos.FRONTPLAYER else self.P_back
+            #self.P_now_player = self.P_front if self.turn == PlayPos.FRONTPLAYER else self.P_back
             reset_flag = False
 
         self.S_ball = Piece(PieceID.BALL_ID)
@@ -115,7 +109,7 @@ class Board:
             self.cells[4][2] = self.S_usa_s
             self.turn = PlayPos.FRONTPLAYER if random.random(
             ) >= 0.5 else PlayPos.BACKPLAYER
-            self.P_now_player = self.P_front if self.turn == PlayPos.FRONTPLAYER else self.P_back
+            #self.P_now_player = self.P_front if self.turn == PlayPos.FRONTPLAYER else self.P_back
         else:
             for i in range(BOARD_HEIGHT):
                 for j in range(BOARD_WIDTH):
@@ -143,6 +137,20 @@ class Board:
                                 self.cells[i][j] = self.S_oyasaru_s
                         elif obj.spiece == PieceID.BALL_ID:
                             self.cells[i][j] = self.S_ball
+
+    def display(self):
+        nums = 4
+        for side in self.cells[::-1]:
+            printn("{}|".format(nums))
+            for cel in side:
+                if cel is not None:
+                    printn(cel.identity)
+                else:
+                    printn("　")
+                printn("|")
+            print()
+            nums -= 1
+        print(".  0  1  2")
 
     def where_you(self, piece):
         arr = np.array(self.cells)
@@ -192,9 +200,13 @@ class Board:
             dist = fromhere + kick
             if -1 <= dist[0] <= 5 and 0 <= dist[1] <= 2:
                 if dist[0] == -1 or dist[0] == 5:
-                    kick_l.append(list(dist))
+                    templ = []
+                    templ.append(list(dist))
+                    kick_l.append(templ)
                 elif tempboard[dist[0]][dist[1]] is None:
-                    kick_l.append(list(dist))
+                    templ = []
+                    templ.append(list(dist))
+                    kick_l.append(templ)
                 elif tempboard[dist[0]][dist[1]] == 1:
                     pass
                 elif tempboard[dist[0]][dist[1]].power == self.turn:
@@ -202,15 +214,13 @@ class Board:
                     tempboard[dist[0]][dist[1]] = 1
                     for oup in self.piece_can_kick(temppiece, tuple(dist),
                                                    tempboard):
-                        tl = []
-                        opve = np.array(oup)
-                        if opve.ndim == 2:
-                            tl = list(dist) + oup
-                        else:
-                            tl.append(list(dist))
-                            tl.append(oup)
+                        templ = []
+                        templ.append(list(dist))
+                        tl = templ + oup
                         kick_l.append(tl)
+        return kick_l
 
+    # return [Act, Act, Act,...]
     def piece_legal_move(self, piece):
         acts = []
         legal_l, ball_legal = self.piece_can_move(piece)
@@ -226,4 +236,86 @@ class Board:
             kicker_place = self.where_you(piece)
             tempcell[kicker_place[0]][kicker_place[1]] = None
             tempcell[ball_legal[0]][ball_legal[1]] = 1
-            rets = self.piece_can_kick(piece, ball_legal, tempcell)
+            kicks = self.piece_can_kick(piece, ball_legal, tempcell)
+            ball_legal = ball_legal + (piece.identity, )
+            for kick in kicks:
+                act = Act(ball_legal, kick)
+                acts.append(act)
+        return acts
+
+    def legal_moves(self):
+        piece_dict = self.front_piece if self.turn == PlayPos.FRONTPLAYER else self.back_piece
+        acts = []
+        for pie in piece_dict.values():
+            acts = acts + self.piece_legal_move(pie)
+        return acts
+
+    def action_parser(self, action):
+        legalmoves = self.legal_moves()
+        existflag = False
+        for l in legalmoves:
+            if l.is_same(action):
+                existflag = True
+        if not existflag:
+            return False, None
+        piece_dict = self.front_piece if self.turn == PlayPos.FRONTPLAYER else self.back_piece
+        S_move_ready = piece_dict[action.move_command[2]]
+        move_to = (action.move_command[0], action.move_command[1])
+
+        # 移動はaction_parser内で
+        if action.kick_command is None:
+            old_place = self.where_you(S_move_ready)
+            self.cells[old_place[0]][old_place[1]] = None
+            self.cells[move_to[0]][move_to[1]] = S_move_ready
+        else:
+            last_stop = action.kick_command[-1]
+            if last_stop[0] == -1:
+                return True, PlayPos.BACKPLAYER
+            elif last_stop[0] == 5:
+                return True, PlayPos.FRONTPLAYER
+            old_place = self.where_you(S_move_ready)
+            self.cells[old_place[0]][old_place[1]] = None
+            self.cells[move_to[0]][move_to[1]] = S_move_ready
+            self.cells[last_stop[0]][last_stop[1]] = self.S_ball
+
+        Sarufpos = self.where_you(self.S_saru_f)
+        if len(Sarufpos) != 0 and Sarufpos[0] == 4:
+            self.cells[Sarufpos[0]][Sarufpos[1]] = self.S_oyasaru_f
+        Saruspos = self.where_you(self.S_saru_s)
+        if len(Saruspos) != 0 and Saruspos[0] == 0:
+            self.cells[Saruspos[0]][Saruspos[1]] = self.S_oyasaru_s
+
+        if self.turn == PlayPos.FRONTPLAYER:
+            self.turn = PlayPos.BACKPLAYER
+        else:
+            self.turn = PlayPos.FRONTPLAYER
+
+        return True, None
+
+
+class DobutuEnv:
+    def __init__(self, frontman, backman):
+        self.Board = Board()
+        self.Board.reset()
+        self.front = frontman
+        self.back = backman
+
+    def progress(self):
+        while True:
+            self.Board.display()
+            legal_moves_l = self.Board.legal_moves()
+            if self.Board.turn == PlayPos.FRONTPLAYER:
+                now_player = self.front
+            elif self.Board.turn == PlayPos.BACKPLAYER:
+                now_player = self.back
+            while True:
+                action = now_player.action(self.Board, legal_moves_l)
+                success, winner = self.Board.action_parser(action)
+                if success is True:
+                    break
+            if winner is not None:
+                self.front.getGameResult(self.Board, winner)
+                self.back.getGameResult(self.Board, winner)
+                break
+            else:
+                now_player.getGameResult(self.Board, winner)

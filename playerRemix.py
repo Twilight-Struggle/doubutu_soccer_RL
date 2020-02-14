@@ -1,6 +1,8 @@
 # coding: UTF-8
 
 import random
+from includes import Act
+from includes import PlayPos
 
 FRONTPLAYER = 0
 BACKPLAYER = 1
@@ -18,7 +20,7 @@ class Player:
 
     def parse_board(self, Board, turnplayer):
         cells = []
-        if turnplayer == BACKPLAYER:
+        if turnplayer == PlayPos.BACKPLAYER:
             for i in range(BOARD_HEIGHT):
                 cells.append(
                     [i for i in Board.cells[BOARD_HEIGHT - 1 - i][::-1]])
@@ -28,20 +30,18 @@ class Player:
 
     def parse_action(self, legal, turnplayer):
         parsed_legalmoves = []
-        if turnplayer == BACKPLAYER:
+        if turnplayer == PlayPos.BACKPLAYER:
             for action in legal:
-                move_command = action[0]
-                kick_commands = action[1]
                 piece_dict = {"サ": "さ", "リ": "り", "ウ": "う", "オ": "お"}
                 new_move_command = [
-                    BOARD_HEIGHT - 1 - move_command[0],
-                    BOARD_WIDTH - 1 - move_command[1],
-                    piece_dict[move_command[2]]
+                    BOARD_HEIGHT - 1 - action.move_command[0],
+                    BOARD_WIDTH - 1 - action.move_command[1],
+                    piece_dict[action.move_command[2]]
                 ]
                 new_kick_commands = None
-                if kick_commands is not None:
+                if action.kick_command is not None:
                     new_kick_commands = []
-                    for kick_to in kick_commands:
+                    for kick_to in action.kick_command:
                         if kick_to is not None:
                             new_kick_to = [
                                 BOARD_HEIGHT - 1 - kick_to[0],
@@ -50,7 +50,7 @@ class Player:
                         else:
                             new_kick_to = None
                         new_kick_commands.append(new_kick_to)
-                new_action = [new_move_command, new_kick_commands]
+                new_action = Act(new_move_command, new_kick_commands)
                 parsed_legalmoves.append(new_action)
         else:
             parsed_legalmoves = legal
@@ -70,8 +70,11 @@ class Human(Player):
     def action(self, Board, legalmoves):
         while True:
             print("合法手")
-            for i, move in enumerate(legalmoves):
-                print(str(i) + '):' + str(move))
+            for i, action in enumerate(legalmoves):
+                printn(str(i) + '):')
+                printn(action.move_command)
+                printn(" ")
+                print(action.kick_command)
             tmp = input()
             try:
                 inp = int(tmp)
@@ -82,9 +85,9 @@ class Human(Player):
         return ret
 
     def getGameResult(self, Board, winner=None):
-        if winner == FRONTPLAYER:
+        if winner == PlayPos.FRONTPLAYER:
             print("front player wins!")
-        elif winner == BACKPLAYER:
+        elif winner == PlayPos.BACKPLAYER:
             print("back player wins!")
 
 
@@ -94,20 +97,17 @@ class Random(Player):
 
     def action(self, Board, legalmoves):
         not_lose = []
-        legalmoves_p = self.parse_action(legalmoves, Board.turn_player())
-        for i, move in enumerate(legalmoves_p):
-            kick_commands = move[1]
-            if kick_commands is None:
+        legalmoves_p = self.parse_action(legalmoves, Board.turn)
+        for i, action in enumerate(legalmoves_p):
+            if action.kick_command is None:
                 not_lose.append(i)
             else:
                 lose_flag = False
-                for last_stop in kick_commands[::-1]:
-                    if last_stop is not None:
-                        if last_stop[0] == -1:
-                            lose_flag = True
-                        elif last_stop[0] == 5:
-                            return legalmoves[i]
-                        break
+                last_stop = action.kick_command[-1]
+                if last_stop[0] == -1:
+                    lose_flag = True
+                elif last_stop[0] == 5:
+                    return legalmoves[i]
                 if not lose_flag:
                     not_lose.append(i)
         ret_index = not_lose[random.randrange(len(not_lose))]
