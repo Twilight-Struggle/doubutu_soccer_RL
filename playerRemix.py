@@ -4,8 +4,6 @@ import random
 from includes import Act
 from includes import PlayPos
 
-FRONTPLAYER = 0
-BACKPLAYER = 1
 BOARD_WIDTH = 3
 BOARD_HEIGHT = 5
 
@@ -120,20 +118,17 @@ class MonteCarlo(Player):
 
     def policy(self, Board, legalmoves):
         not_lose = []
-        legalmoves_p = self.parse_action(legalmoves, Board.turn_player())
-        for i, move in enumerate(legalmoves_p):
-            kick_commands = move[1]
-            if kick_commands is None:
+        legalmoves_p = self.parse_action(legalmoves, Board.turn)
+        for i, action in enumerate(legalmoves_p):
+            if action.kick_command is None:
                 not_lose.append(i)
             else:
                 lose_flag = False
-                for last_stop in kick_commands[::-1]:
-                    if last_stop is not None:
-                        if last_stop[0] == -1:
-                            lose_flag = True
-                        elif last_stop[0] == 5:
-                            return legalmoves[i]
-                        break
+                last_stop = action.kick_command[-1]
+                if last_stop[0] == -1:
+                    lose_flag = True
+                elif last_stop[0] == 5:
+                    return legalmoves[i]
                 if not lose_flag:
                     not_lose.append(i)
         if len(not_lose) != 0:
@@ -146,18 +141,29 @@ class MonteCarlo(Player):
         return legalmoves[ret_index]
 
     def trial(self, Board, act):
+        kaisu = 0
         tempboard = Board.clone()
-        myturn = tempboard.turn_player()
+        myturn = tempboard.turn
         success, winner = tempboard.action_parser(act)
+        if not success:
+            print("act is not recieved")
         if winner is not None:
             if winner == myturn:
                 return 10
             else:
                 return -10
         while True:
+            kaisu += 1
             legal_moves_l = tempboard.legal_moves()
+            if len(legal_moves_l) == 0:
+                print("trial legalmove is 0:kaisu is {}".format(kaisu))
+                tempboard.display()
+                print(tempboard.turn)
             while True:
-                action = self.policy(tempboard, legal_moves_l)
+                if len(legal_moves_l) == 0:
+                    action = None
+                else:
+                    action = self.policy(tempboard, legal_moves_l)
                 success, winner = tempboard.action_parser(action)
                 if success is True:
                     break

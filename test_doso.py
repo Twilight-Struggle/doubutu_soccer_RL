@@ -9,9 +9,6 @@ import pytest
 import copy
 import refact_doso
 
-BOARD_HEIGHT = 5
-BOARD_WIDTH = 3
-
 S_ball = refact_doso.Piece(refact_doso.PieceID.BALL_ID)
 S_oyasaru_f = refact_doso.Piece(refact_doso.PieceID.OYASARU_ID,
                                 refact_doso.PlayPos.FRONTPLAYER)
@@ -42,8 +39,7 @@ cells[3][1] = S_saru_s
 cells[4][0] = S_risu_s
 cells[4][2] = S_usa_s
 
-dummyboard = refact_doso.Board(None, None, refact_doso.PlayPos.FRONTPLAYER,
-                               cells)
+dummyboard = refact_doso.Board(refact_doso.PlayPos.FRONTPLAYER, cells)
 
 
 @pytest.mark.parametrize('inp, out', [(dummyboard.S_ball, (2, 1)),

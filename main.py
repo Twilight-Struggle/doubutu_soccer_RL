@@ -9,5 +9,5 @@ if __name__ == "__main__":
     rand = playerRemix.Random()
     monte = playerRemix.MonteCarlo()
     monte2 = playerRemix.MonteCarlo()
-    env = DobutuEnv(human, rand)
+    env = DobutuEnv(monte, monte2)
     env.progress()

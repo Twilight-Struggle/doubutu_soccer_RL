@@ -4,7 +4,8 @@
 import numpy as np
 import random
 import copy
-from playerRemix import *
+from includes import Act
+from includes import PlayPos
 from enum import Enum, auto
 
 BOARD_HEIGHT = 5
@@ -138,6 +139,9 @@ class Board:
                         elif obj.spiece == PieceID.BALL_ID:
                             self.cells[i][j] = self.S_ball
 
+    def clone(self):
+        return Board(self.turn, copy.deepcopy(self.cells))
+
     def display(self):
         nums = 4
         for side in self.cells[::-1]:
@@ -251,6 +255,12 @@ class Board:
         return acts
 
     def action_parser(self, action):
+        if action is None:
+            if self.turn == PlayPos.FRONTPLAYER:
+                self.turn = PlayPos.BACKPLAYER
+            else:
+                self.turn = PlayPos.FRONTPLAYER
+            return True, None
         legalmoves = self.legal_moves()
         existflag = False
         for l in legalmoves:
@@ -309,7 +319,10 @@ class DobutuEnv:
             elif self.Board.turn == PlayPos.BACKPLAYER:
                 now_player = self.back
             while True:
-                action = now_player.action(self.Board, legal_moves_l)
+                if len(legal_moves_l) == 0:
+                    action = None
+                else:
+                    action = now_player.action(self.Board, legal_moves_l)
                 success, winner = self.Board.action_parser(action)
                 if success is True:
                     break
