@@ -188,3 +188,14 @@ class MonteCarlo(Player):
         for i, v in scores.items():
             if v == max_score:
                 return legalmoves[i]
+
+
+class Qlearning(Player):
+    def __init__(self):
+        self.last_board = None
+
+    def policy(self, Board):
+        self.last_board = Board.clone()
+        legal_moves_l = self.last_board.legal_moves()
+        if random.random() < self.e:
+            return legal_moves_l[random.randrange(len(legal_moves_l))]
