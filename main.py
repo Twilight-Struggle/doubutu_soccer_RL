@@ -2,6 +2,7 @@
 # coding: UTF-8
 
 from refact_doso import DobutuEnv
+from includes import PlayPos
 import playerRemix
 
 if __name__ == "__main__":
