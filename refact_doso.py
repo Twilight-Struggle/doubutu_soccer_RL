@@ -6,6 +6,7 @@ import random
 import copy
 from includes import Act
 from includes import PlayPos
+from includes import list_to_tuple
 from enum import Enum, auto
 
 BOARD_HEIGHT = 5
@@ -101,6 +102,9 @@ class Board:
 
     def reset(self, reset_flag=True):
         if reset_flag is True:
+            for i in range(BOARD_HEIGHT):
+                for j in range(BOARD_WIDTH):
+                    self.cells[i][j] = None
             self.cells[1][1] = self.S_saru_f
             self.cells[0][0] = self.S_usa_f
             self.cells[0][2] = self.S_risu_f
@@ -243,7 +247,8 @@ class Board:
             kicks = self.piece_can_kick(piece, ball_legal, tempcell)
             ball_legal = ball_legal + (piece.identity, )
             for kick in kicks:
-                act = Act(ball_legal, kick)
+                kickt = list_to_tuple(kick)
+                act = Act(ball_legal, kickt)
                 acts.append(act)
         return acts
 
@@ -332,3 +337,6 @@ class DobutuEnv:
                 break
             else:
                 now_player.getGameResult(self.Board, winner)
+
+    def reset(self):
+        self.Board.reset()

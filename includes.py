@@ -19,3 +19,13 @@ class Act():
             return True
         else:
             return False
+
+
+def list_to_tuple(_list):
+    t = ()
+    for e in _list:
+        if isinstance(e, list):
+            t += (list_to_tuple(e), )
+        else:
+            t += (e, )
+    return t

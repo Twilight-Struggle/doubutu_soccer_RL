@@ -3,6 +3,7 @@
 import random
 from includes import Act
 from includes import PlayPos
+from includes import list_to_tuple
 
 BOARD_WIDTH = 3
 BOARD_HEIGHT = 5
@@ -19,11 +20,35 @@ class Player:
     def parse_board(self, Board, turnplayer):
         cells = []
         if turnplayer == PlayPos.BACKPLAYER:
+            piece_dict = {
+                "サ": "さ",
+                "リ": "り",
+                "ウ": "う",
+                "オ": "お",
+                "さ": "サ",
+                "り": "リ",
+                "う": "ウ",
+                "お": "オ",
+                "ボ": "ボ"
+            }
             for i in range(BOARD_HEIGHT):
-                cells.append(
-                    [i for i in Board.cells[BOARD_HEIGHT - 1 - i][::-1]])
+                yokocell = Board.cells[BOARD_HEIGHT - 1 - i]
+                newyokocell = []
+                for nakami in yokocell[::-1]:
+                    if nakami is None:
+                        newyokocell.append(None)
+                    else:
+                        newyokocell.append(piece_dict[nakami.identity])
+                cells.append(newyokocell)
         else:
-            cells = Board.cells
+            for i in range(BOARD_HEIGHT):
+                newyokocell = []
+                for j in range(BOARD_WIDTH):
+                    if Board.cells[i][j] is None:
+                        newyokocell.append(None)
+                    else:
+                        newyokocell.append(Board.cells[i][j].identity)
+                cells.append(newyokocell)
         return cells
 
     def parse_action(self, legal, turnplayer):
@@ -191,9 +216,9 @@ class MonteCarlo(Player):
 
 
 class Qlearning(Player):
-    def __init__(self, playpos, e=0.2, alpha=0.2):
+    def __init__(self, playpos, qtable, e=0.2, alpha=0.2):
         self.last_board = None
-        self.Qtable = {}
+        self.Qtable = qtable if qtable is not None else {}
         self.last_action_parsed = None
         self.alpha = alpha
         self.gammm = 0.9
@@ -204,12 +229,14 @@ class Qlearning(Player):
         self.last_board = Board.clone()
         legal_move_l = self.last_board.legal_moves()
         legal_move_parse = self.parse_action(legal_move_l,
-                                             self.last_board.turnplayer)
+                                             self.last_board.turn)
         last_board_cells = self.parse_board(self.last_board,
-                                            self.last_board.turnplayer)
+                                            self.last_board.turn)
 
         if random.random() < self.e:
-            return legal_move_l[random.randrange(len(legal_move_l))]
+            retindex = random.randrange(len(legal_move_l))
+            self.last_action_parsed = legal_move_parse[retindex]
+            return legal_move_l[retindex]
         Qvaluelist = [
             self.getQvalue(last_board_cells, action)
             for action in legal_move_parse
@@ -229,25 +256,28 @@ class Qlearning(Player):
         return legal_move_l[best_index]
 
     def getQvalue(self, boardcells, Act):
-        if self.Qtable.get(
-            (boardcells, Act.move_command, Act.kick_command)) is None:
-            self.Qtable[(boardcells, Act.move_command, Act.kick_command)] = 1
+        if self.Qtable.get((list_to_tuple(boardcells), Act.move_command,
+                            Act.kick_command)) is None:
+            self.Qtable[(list_to_tuple(boardcells), Act.move_command,
+                         Act.kick_command)] = 1
         return self.Qtable.get(
-            (boardcells, Act.move_command, Act.kick_command))
+            (list_to_tuple(boardcells), Act.move_command, Act.kick_command))
 
     def getGameResult(self, Board, winner):
         last_board_cells_parsed = self.parse_board(self.last_board,
-                                                   self.last_board.turnplayer)
+                                                   self.last_board.turn)
         if winner is None:
             self.learn(last_board_cells_parsed, self.last_action_parsed, 0,
-                       Board)
+                       Board, winner)
         else:
             if winner == self.playpos:
                 self.learn(last_board_cells_parsed, self.last_action_parsed, 1,
-                           Board)
+                           Board, winner)
+                print("yeah!")
             else:
                 self.learn(last_board_cells_parsed, self.last_action_parsed,
-                           -1, Board)
+                           -1, Board, winner)
+                print("fuck")
             self.last_action_parsed = None
             self.last_board = None
 
@@ -256,13 +286,14 @@ class Qlearning(Player):
         if winner is not None:
             maxQs1 = 0
         else:
-            Qs1cells = self.parse_board(Qs1Board, Qs1Board.turnplayer)
+            Qs1cells = self.parse_board(Qs1Board, Qs1Board.turn)
             maxQs1 = max([
                 self.getQvalue(Qs1cells, action)
                 for action in Qs1Board.legal_moves()
             ])
-        self.Qtable[(Qscells, Act.move_command, Act.kick_command
-                     )] = Qs + self.alpha((reward + self.gammm * maxQs1) - Qs)
+        self.Qtable[(list_to_tuple(Qscells), Act.move_command,
+                     Act.kick_command)] = Qs + self.alpha * (
+                         (reward + self.gammm * maxQs1) - Qs)
 
     def action(self, Board, legalmoves):
         return self.policy(Board)
