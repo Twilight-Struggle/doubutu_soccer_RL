@@ -334,9 +334,10 @@ class DobutuEnv:
             if winner is not None:
                 self.front.getGameResult(self.Board, winner)
                 self.back.getGameResult(self.Board, winner)
-                break
+                return winner
             else:
-                now_player.getGameResult(self.Board, winner)
+                if len(legal_moves_l) != 0:
+                    now_player.getGameResult(self.Board, winner)
 
     def reset(self):
         self.Board.reset()
