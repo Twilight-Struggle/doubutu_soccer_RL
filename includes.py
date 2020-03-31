@@ -3,6 +3,9 @@
 
 from enum import Enum, auto
 
+fuckinglobal = 0
+fuckinglobal2 = 0
+
 
 class PlayPos(Enum):
     FRONTPLAYER = auto()

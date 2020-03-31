@@ -4,6 +4,7 @@ import random
 from includes import Act
 from includes import PlayPos
 from includes import list_to_tuple
+import includes
 
 BOARD_WIDTH = 3
 BOARD_HEIGHT = 5
@@ -256,12 +257,16 @@ class Qlearning(Player):
         return legal_move_l[best_index]
 
     def getQvalue(self, boardcells, Act):
-        if self.Qtable.get((list_to_tuple(boardcells), Act.move_command,
-                            Act.kick_command)) is None:
+        gotQvalue = self.Qtable.get(
+            (list_to_tuple(boardcells), Act.move_command, Act.kick_command))
+        if gotQvalue is None:
             self.Qtable[(list_to_tuple(boardcells), Act.move_command,
                          Act.kick_command)] = 1
-        return self.Qtable.get(
-            (list_to_tuple(boardcells), Act.move_command, Act.kick_command))
+            gotQvalue = 1
+            includes.fuckinglobal += 1
+        else:
+            includes.fuckinglobal2 += 1
+        return gotQvalue
 
     def getGameResult(self, Board, winner):
         last_board_cells_parsed = self.parse_board(self.last_board,
@@ -273,11 +278,11 @@ class Qlearning(Player):
             if winner == self.playpos:
                 self.learn(last_board_cells_parsed, self.last_action_parsed, 1,
                            Board, winner)
-                print("yeah!")
+                #print("yeah!")
             else:
                 self.learn(last_board_cells_parsed, self.last_action_parsed,
                            -1, Board, winner)
-                print("fuck")
+                #print("fuck")
             self.last_action_parsed = None
             self.last_board = None
 
@@ -287,10 +292,14 @@ class Qlearning(Player):
             maxQs1 = 0
         else:
             Qs1cells = self.parse_board(Qs1Board, Qs1Board.turn)
-            maxQs1 = max([
-                self.getQvalue(Qs1cells, action)
-                for action in Qs1Board.legal_moves()
-            ])
+            if len(Qs1Board.legal_moves()) == 0:
+                maxQs1 = 0
+                reward = -0.5
+            else:
+                maxQs1 = max([
+                    self.getQvalue(Qs1cells, action)
+                    for action in Qs1Board.legal_moves()
+                ])
         self.Qtable[(list_to_tuple(Qscells), Act.move_command,
                      Act.kick_command)] = Qs + self.alpha * (
                          (reward + self.gammm * maxQs1) - Qs)

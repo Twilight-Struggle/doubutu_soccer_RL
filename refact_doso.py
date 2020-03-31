@@ -317,7 +317,7 @@ class DobutuEnv:
 
     def progress(self):
         while True:
-            self.Board.display()
+            #self.Board.display()
             legal_moves_l = self.Board.legal_moves()
             if self.Board.turn == PlayPos.FRONTPLAYER:
                 now_player = self.front

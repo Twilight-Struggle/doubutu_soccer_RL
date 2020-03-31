@@ -3,6 +3,7 @@
 
 from refact_doso import DobutuEnv
 from includes import PlayPos
+import includes
 import playerRemix
 import pickle
 import os
@@ -22,17 +23,19 @@ if __name__ == "__main__":
 
     winrate = []
     env = DobutuEnv(qlearn, rand)
-    for i in range(100):
+    for i in range(1000):
         count = 0
-        for j in range(10000):
+        for j in range(100):
             winner = env.progress()
             if winner == PlayPos.FRONTPLAYER:
                 count += 1
             env.reset()
-        won = count / 10000 * 100
+        won = count
         winrate.append(won)
+        print(i)
     # print(qlearn.Qtable)
     with open("Qlearning.pickle", "wb") as fq:
         pickle.dump(qlearn.Qtable, fq)
     for i in winrate:
         print(i)
+    print("{} {}".format(includes.fuckinglobal, includes.fuckinglobal2))
