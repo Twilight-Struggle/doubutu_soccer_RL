@@ -12,6 +12,8 @@ class PlayPos(Enum):
     BACKPLAYER = auto()
 
 
+# move_command = [(x, y, "さ")]
+# kick_command = [[x, y], [a, b]]
 class Act():
     def __init__(self, move, kick):
         self.move_command = move
