@@ -445,6 +445,8 @@ class Vlearning(Player):
         if gotVvalue is None:
             self.Vtable[(list_to_tuple(boardcells), turn)] = 1
             gotVvalue = 1
+        print("Used key byte:{}".format(
+            compute_object_size((list_to_tuple(boardcells), turn))))
         return gotVvalue
 
     def getGameResult(self, Board, winner):
