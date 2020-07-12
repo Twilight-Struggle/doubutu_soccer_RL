@@ -4,6 +4,7 @@ import random
 from includes import Act
 from includes import PlayPos
 from includes import list_to_tuple
+from includes import playpos_opponent
 import includes
 
 BOARD_WIDTH = 3
@@ -18,7 +19,7 @@ class Player:
     def __init__(self):
         pass
 
-    def parse_board(self, Board, turnplayer):
+    def parse_board_original(self, Board, turnplayer):
         cells = []
         if turnplayer == PlayPos.BACKPLAYER:
             piece_dict = {
@@ -49,6 +50,53 @@ class Player:
                         newyokocell.append(None)
                     else:
                         newyokocell.append(Board.cells[i][j].identity)
+                cells.append(newyokocell)
+        return cells
+
+    def parse_board(self, Board, turnplayer):
+        cells = []
+        if turnplayer == PlayPos.BACKPLAYER:
+            piece_dict = {
+                "サ": "さ",
+                "リ": "り",
+                "ウ": "う",
+                "オ": "お",
+                "さ": "サ",
+                "り": "リ",
+                "う": "ウ",
+                "お": "オ",
+                "ボ": "ボ"
+            }
+            piece_number_dict = {
+                "さ": 0,
+                "り": 1,
+                "う": 2,
+                "お": 3,
+                "サ": 4,
+                "リ": 5,
+                "ウ": 6,
+                "オ": 7,
+                "ボ": 8,
+            }
+            for i in range(BOARD_HEIGHT):
+                yokocell = Board.cells[BOARD_HEIGHT - 1 - i]
+                newyokocell = []
+                for nakami in yokocell[::-1]:
+                    if nakami is None:
+                        newyokocell.append(None)
+                    else:
+                        newyokocell.append(
+                            piece_number_dict[piece_dict[nakami.identity]])
+                cells.append(newyokocell)
+        else:
+            for i in range(BOARD_HEIGHT):
+                newyokocell = []
+                for j in range(BOARD_WIDTH):
+                    if Board.cells[i][j] is None:
+                        newyokocell.append(None)
+                    else:
+                        newyokocell.append(
+                            piece_number_dict[Board.cells[i][j].identity])
                 cells.append(newyokocell)
         return cells
 
@@ -303,6 +351,109 @@ class Qlearning(Player):
         self.Qtable[(list_to_tuple(Qscells), Act.move_command,
                      Act.kick_command)] = Qs + self.alpha * (
                          (reward + self.gammm * maxQs1) - Qs)
+
+    def action(self, Board, legalmoves):
+        return self.policy(Board)
+
+
+class Vlearning(Player):
+    def __init__(self, playpos, vtable, e=0.1, alpha=0.2):
+        self.last_board = None
+        self.Vtable = vtable if vtable is not None else {}
+        self.alpha = alpha
+        self.gamma = 0.9
+        self.e = e
+        self.playpos = playpos
+
+    def policy(self, Board):
+        self.last_board = Board.clone()
+        legal_move_l = self.last_board.legal_moves()
+        # 一定の確率でランダムな手をうつ
+        if random.random() < self.e:
+            retindex = random.randrange(len(legal_move_l))
+            return legal_move_l[retindex]
+
+        # 現状態から遷移可能なすべての盤面を保存
+        next_board_list_cells = []
+        for legal_move in legal_move_l:
+            temp_board = self.last_board.clone()
+            temp_board.action_parser(legal_move)
+            # 反転せずcell化してほしいので第2引数に自分のターンを指定
+            next_board_list_cells.append(
+                self.parse_board(temp_board,
+                                 playpos_opponent(temp_board.turn)))
+
+        # (遷移可能な盤面 + 相手のターン)　でテーブルを引く
+        Vvaluelist = [
+            self.getVvalue(next_board_cell,
+                           playpos_opponent(self.last_board.turn))
+            for next_board_cell in next_board_list_cells
+        ]
+        maxVvalue = max(Vvaluelist)
+
+        if Vvaluelist.count(maxVvalue) > 1:
+            best_option = [
+                i for i in range(len(legal_move_l))
+                if Vvaluelist[i] == maxVvalue
+            ]
+            best_index = random.choice(best_option)
+        else:
+            best_index = Vvaluelist.index(maxVvalue)
+
+        return legal_move_l[best_index]
+
+    def getVvalue(self, boardcells, turn):
+        gotVvalue = self.Vtable.get((list_to_tuple(boardcells), turn))
+        if gotVvalue is None:
+            self.Vtable[(list_to_tuple(boardcells), turn)] = 1
+            gotVvalue = 1
+        return gotVvalue
+
+    def getGameResult(self, Board, winner):
+        # 自分のターンで1手打ったときの学習
+        if self.playpos != Board.turn:
+            last_board_cells = self.parse_board(self.last_board, self.playpos)
+            # 反転せずcell化してほしいので第2引数に自分のターンを指定
+            board_cells = self.parse_board(Board, self.playpos)
+            if winner is None:
+                self.Vtable[(list_to_tuple(last_board_cells),
+                             self.playpos)] = self.getVvalue(
+                                 board_cells, Board.turn)
+                self.last_board = Board
+            else:
+                if winner == self.playpos:
+                    # 自分がゴールしたとき
+                    self.Vtable[(list_to_tuple(last_board_cells),
+                                 self.last_board.turn)] = 1
+                else:
+                    # 自分がオウンゴールしたとき
+                    self.Vtable[(list_to_tuple(last_board_cells),
+                                 self.last_board.turn)] = -1 * self.gamma
+                self.last_board = None
+        # 相手のターンで1手打たれたときの学習
+        else:
+            # 反転せずcell化してほしいので第2引数に自分のターンを指定
+            last_board_cells = self.parse_board(self.last_board, self.playpos)
+            board_cells = self.parse_board(Board, self.playpos)
+            Vs = self.getVvalue(last_board_cells, self.last_board.turn)
+            if winner is None:
+                self.Vtable[(
+                    list_to_tuple(last_board_cells), self.last_board.turn
+                )] = Vs + self.alpha * (
+                    self.gamma * self.getVvalue(board_cells, Board.turn) - Vs)
+                # self.last_board = Board 自分のターンのpolicyで設定するためなくて良い
+            else:
+                if winner == self.playpos:
+                    # 相手がオウンゴールしたとき
+                    self.Vtable[(
+                        list_to_tuple(last_board_cells),
+                        self.last_board.turn)] = Vs + self.alpha * (1 - Vs)
+                else:
+                    # 相手がゴールしたとき
+                    self.Vtable[(
+                        list_to_tuple(last_board_cells),
+                        self.last_board.turn)] = Vs + self.alpha * (-1 - Vs)
+                self.last_board = None
 
     def action(self, Board, legalmoves):
         return self.policy(Board)
