@@ -12,7 +12,7 @@ if __name__ == "__main__":
     monte2 = playerRemix.MonteCarlo()
 
     vtable = None
-    vlearn = playerRemix.Qlearning(PlayPos.FRONTPLAYER, vtable)
+    vlearn = playerRemix.Vlearning(PlayPos.FRONTPLAYER, vtable)
 
     env = DobutuEnv(vlearn, rand)
     env.progress()
