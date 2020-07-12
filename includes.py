@@ -12,15 +12,6 @@ class PlayPos(Enum):
     BACKPLAYER = auto()
 
 
-def playpos_opponent(playpos):
-    if playpos == PlayPos.FRONTPLAYER:
-        return PlayPos.BACKPLAYER
-    elif playpos == PlayPos.BACKPLAYER:
-        return PlayPos.FRONTPLAYER
-
-
-# move_command = [(x, y, "さ")]
-# kick_command = [[x, y], [a, b]]
 class Act():
     def __init__(self, move, kick):
         self.move_command = move
