@@ -55,6 +55,17 @@ class Player:
 
     def parse_board(self, Board, turnplayer):
         cells = []
+        piece_number_dict = {
+            "さ": 0,
+            "り": 1,
+            "う": 2,
+            "お": 3,
+            "サ": 4,
+            "リ": 5,
+            "ウ": 6,
+            "オ": 7,
+            "ボ": 8,
+        }
         if turnplayer == PlayPos.BACKPLAYER:
             piece_dict = {
                 "サ": "さ",
@@ -66,17 +77,6 @@ class Player:
                 "う": "ウ",
                 "お": "オ",
                 "ボ": "ボ"
-            }
-            piece_number_dict = {
-                "さ": 0,
-                "り": 1,
-                "う": 2,
-                "お": 3,
-                "サ": 4,
-                "リ": 5,
-                "ウ": 6,
-                "オ": 7,
-                "ボ": 8,
             }
             for i in range(BOARD_HEIGHT):
                 yokocell = Board.cells[BOARD_HEIGHT - 1 - i]
@@ -431,7 +431,7 @@ class Vlearning(Player):
                                  self.last_board.turn)] = -1 * self.gamma
                 self.last_board = None
         # 相手のターンで1手打たれたときの学習
-        else:
+        elif self.last_board is not None:
             # 反転せずcell化してほしいので第2引数に自分のターンを指定
             last_board_cells = self.parse_board(self.last_board, self.playpos)
             board_cells = self.parse_board(Board, self.playpos)
