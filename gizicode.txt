@@ -1,0 +1,49 @@
+def policy:
+    if random < e:
+        return random_move
+    next_board_list = ???
+    Qvaluelist = func(next_board_list)
+    best_index = 最大の期待値を持つ状態になるアクションを選択
+    return legal_moves(best_index)
+
+def getQvalue(boardcells):
+    gotQvalue = self.Qtable.get(boardcells)
+    if gotQvalue is None:
+        self.Qtable[boardcells] = 1
+        gotQvalue = 1
+    return gotQvalue
+
+def getGameResult(self, Board, winner):
+    # 自分のターンで1手打ったときの学習
+    if self.playpos != Board.turn:
+        last_board_cells = func(self.last_board)
+        if winner is None:
+            self.Qtable[last_board_cells] = self.getQvalue[func(Board)]
+            self.last_board = Board
+        else:
+            if winner == self.playpos:
+                # 自分がゴールしたとき
+                self.Qtable[last_board_cells] = 1
+            else:
+                # 自分がオウンゴールしたとき(選ばなくね？)
+                self.Qtable[last_board_cells] = -1 * self.gamma
+            self.last_board = None
+
+    # 相手のターンで1手打たれたときの学習
+    else:
+        last_board_cells = func(self.last_board)
+        if winner is None:
+            Vs = self.Qtable[last_board_cells]
+            self.Qtable[last_board_cells] = Vs + self.aplha * (
+                self.gammme * self.getQvalue[func(Board)] -Vs)
+            # self.last_board = Board 自分のターンのpolicyで設定するためなくて良い
+        else:
+            if winner == self.playpos:
+                # 相手がオウンゴールしたとき
+                self.Qtable[last_board_cells] = Vs + self.aplha * (1 -Vs)
+            else:
+                # 相手がゴールしたとき
+                self.Qtable[last_board_cells] = Vs + self.aplha * (-1 -Vs)
+            # self.last_board = None
+
+
