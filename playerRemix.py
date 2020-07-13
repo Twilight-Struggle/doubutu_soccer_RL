@@ -426,9 +426,8 @@ class Vlearning(Player):
                     self.Vtable[(list_to_tuple(last_board_cells),
                                  self.last_board.turn)] = 1
                 else:
-                    # 自分がオウンゴールしたとき
-                    self.Vtable[(list_to_tuple(last_board_cells),
-                                 self.last_board.turn)] = -1 * self.gamma
+                    # 自分がオウンゴールしたときはeにより誤って選択してしまったときのため、盤面評価として適さない
+                    pass
                 self.last_board = None
         # 相手のターンで1手打たれたときの学習
         elif self.last_board is not None:
