@@ -14,6 +14,9 @@ if __name__ == "__main__":
     monte = playerRemix.MonteCarlo()
     monte2 = playerRemix.MonteCarlo()
 
+    vtable = None
+    vlearn = playerRemix.Vlearning(PlayPos.FRONTPLAYER, vtable)
+
     winrate = []
     env = DobutuEnv(monte, rand)
     winner = env.progress()
