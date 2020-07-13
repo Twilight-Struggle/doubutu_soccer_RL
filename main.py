@@ -34,7 +34,7 @@ if __name__ == "__main__":
             env.reset()
         won = count
         print("winrate:{}".format(won), flush=True)
-        if won > 50:
+        if won > 80:
             with open("Vlearning.pickle", "wb") as fq:
                 pickle.dump(vlearn.Vtable, fq)
             break
