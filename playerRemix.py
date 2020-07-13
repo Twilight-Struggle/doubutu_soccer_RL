@@ -374,21 +374,21 @@ class Vlearning(Player):
             return legal_move_l[retindex]
 
         # 現状態から遷移可能なすべての盤面を保存
-        next_board_list_cells = []
+        Vvaluelist = []
         for legal_move in legal_move_l:
             temp_board = self.last_board.clone()
-            temp_board.action_parser(legal_move)
+            success, winner = temp_board.action_parser(legal_move)
             # 反転せずcell化してほしいので第2引数に自分のターンを指定
-            next_board_list_cells.append(
-                self.parse_board(temp_board,
-                                 playpos_opponent(temp_board.turn)))
-
-        # (遷移可能な盤面 + 相手のターン)　でテーブルを引く
-        Vvaluelist = [
-            self.getVvalue(next_board_cell,
-                           playpos_opponent(self.last_board.turn))
-            for next_board_cell in next_board_list_cells
-        ]
+            next_temp_board_cells = self.parse_board(temp_board, self.playpos)
+            if winner == self.playpos:
+                Vvaluelist.append(1)
+            elif winner == playpos_opponent(self.playpos):
+                Vvaluelist.append(-1)
+            elif winner is None:
+                # (遷移可能な盤面 + 相手のターン)でテーブルを引く
+                Vvaluelist.append(
+                    self.getVvalue(next_temp_board_cells,
+                                   playpos_opponent(self.playpos)))
         maxVvalue = max(Vvaluelist)
 
         if Vvaluelist.count(maxVvalue) > 1:
@@ -405,8 +405,8 @@ class Vlearning(Player):
     def getVvalue(self, boardcells, turn):
         gotVvalue = self.Vtable.get((list_to_tuple(boardcells), turn))
         if gotVvalue is None:
-            self.Vtable[(list_to_tuple(boardcells), turn)] = 1
-            gotVvalue = 1
+            self.Vtable[(list_to_tuple(boardcells), turn)] = 0.999999
+            gotVvalue = 0.999999
         return gotVvalue
 
     def getGameResult(self, Board, winner):
