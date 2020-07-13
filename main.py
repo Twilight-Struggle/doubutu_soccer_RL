@@ -21,7 +21,6 @@ if __name__ == "__main__":
         vtable = None
     vlearn = playerRemix.Vlearning(PlayPos.FRONTPLAYER, vtable)
 
-    winrate = []
     loop_num = 0
     env = DobutuEnv(vlearn, rand)
     while True:
@@ -33,13 +32,10 @@ if __name__ == "__main__":
                 count += 1
             env.reset()
         won = count
-        winrate.append(won)
+        print(won)
         if won > 50:
             break
         if loop_num > 1000:
             loop_num = 0
             with open("Vlearning.pickle", "wb") as fq:
                 pickle.dump(vlearn.Vtable, fq)
-
-    for i in winrate:
-        print(i)
