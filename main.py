@@ -9,10 +9,10 @@ import pickle
 import os
 
 if __name__ == "__main__":
-    human = playerRemix.Human()
+    # human = playerRemix.Human()
     rand = playerRemix.Random()
-    monte = playerRemix.MonteCarlo()
-    monte2 = playerRemix.MonteCarlo()
+    # monte = playerRemix.MonteCarlo()
+    # monte2 = playerRemix.MonteCarlo()
 
     if os.path.exists("./Vlearning.pickle"):
         with open("Vlearning.pickle", "rb") as fq:
@@ -21,6 +21,7 @@ if __name__ == "__main__":
         vtable = None
     vlearn = playerRemix.Vlearning(PlayPos.FRONTPLAYER, vtable)
 
+    print("init done", flush=True)
     loop_num = 0
     env = DobutuEnv(vlearn, rand)
     while True:
@@ -32,8 +33,10 @@ if __name__ == "__main__":
                 count += 1
             env.reset()
         won = count
-        print(won)
+        print("winrate:{}".format(won), flush=True)
         if won > 50:
+            with open("Vlearning.pickle", "wb") as fq:
+                pickle.dump(vlearn.Vtable, fq)
             break
         if loop_num > 1000:
             loop_num = 0
