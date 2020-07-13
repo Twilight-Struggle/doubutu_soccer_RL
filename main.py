@@ -14,13 +14,32 @@ if __name__ == "__main__":
     monte = playerRemix.MonteCarlo()
     monte2 = playerRemix.MonteCarlo()
 
-    vtable = None
+    if os.path.exists("./Vlearning.pickle"):
+        with open("Vlearning.pickle", "rb") as fq:
+            vtable = pickle.load(fq)
+    else:
+        vtable = None
     vlearn = playerRemix.Vlearning(PlayPos.FRONTPLAYER, vtable)
 
     winrate = []
-    env = DobutuEnv(monte, rand)
-    winner = env.progress()
-    if winner == PlayPos.FRONTPLAYER:
-        print("Winner is monte!")
-    else:
-        print("Winner is rand!")
+    loop_num = 0
+    env = DobutuEnv(vlearn, rand)
+    while True:
+        count = 0
+        loop_num += 1
+        for j in range(100):
+            winner = env.progress()
+            if winner == PlayPos.FRONTPLAYER:
+                count += 1
+            env.reset()
+        won = count
+        winrate.append(won)
+        if won > 50:
+            break
+        if loop_num > 1000:
+            loop_num = 0
+            with open("Vlearning.pickle", "wb") as fq:
+                pickle.dump(vlearn.Vtable, fq)
+
+    for i in winrate:
+        print(i)
