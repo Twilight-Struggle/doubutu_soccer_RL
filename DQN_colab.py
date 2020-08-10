@@ -379,6 +379,10 @@ class DQNenv:
         self.Board.reset()
         self.legalmoves_num_act_dict = self.Board.legalmoves_to_num_parsed()
 
+    def reset(self):
+        self.Board.reset()
+        self.legalmoves_num_act_dict = self.Board.legalmoves_to_num_parsed()
+
     # ボードの状態をnumpy配列で表す。
     # board.cell → np.narray
     # 下側を自陣、上側を敵陣と固定
@@ -449,7 +453,7 @@ class DQNenv:
             else:
                 reward = -1
             next_state = None
-            next_action = []
+            next_action = None
             done = True
         else:
             self.legalmoves_num_act_dict = self.Board.legalmoves_to_num_parsed(
