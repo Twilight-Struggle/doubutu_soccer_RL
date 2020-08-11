@@ -455,6 +455,7 @@ class DQNenv:
             next_state = None
             next_action = None
             done = True
+            skip_turn = False
         else:
             self.legalmoves_num_act_dict = self.Board.legalmoves_to_num_parsed(
             )
@@ -462,8 +463,10 @@ class DQNenv:
             next_state = self.tensor_state_parsed()
             next_action = list(self.legalmoves_num_act_dict.keys())
             done = False
+            skip_turn = False if len(
+                self.legalmoves_num_act_dict) != 0 else True
 
-        return next_state, next_action, reward, done
+        return next_state, next_action, reward, done, skip_turn
 
 
 if __name__ == "__main__":
