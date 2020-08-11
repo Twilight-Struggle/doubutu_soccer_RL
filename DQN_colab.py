@@ -297,6 +297,11 @@ class Board:
         legalmoves_num_act_dict = {}
         legalmoves = self.legal_moves()
         if not legalmoves:
+            old_place_num = 15
+            move_to_num = 15
+            kick_to_num = 15
+            action_num = old_place_num * 288 + move_to_num * 18 + kick_to_num
+            legalmoves_num_act_dict[action_num] = None
             return legalmoves_num_act_dict
         piece_dict = self.front_piece if self.turn == PlayPos.FRONTPLAYER else self.back_piece
         for action in legalmoves:
