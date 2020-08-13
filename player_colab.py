@@ -119,6 +119,34 @@ class Random:
                 cells.append(newyokocell)
         return cells
 
+    def parse_action(self, legal, turnplayer):
+        parsed_legalmoves = []
+        if turnplayer == PlayPos.BACKPLAYER:
+            for action in legal:
+                piece_dict = {"サ": "さ", "リ": "り", "ウ": "う", "オ": "お"}
+                new_move_command = [
+                    BOARD_HEIGHT - 1 - action.move_command[0],
+                    BOARD_WIDTH - 1 - action.move_command[1],
+                    piece_dict[action.move_command[2]]
+                ]
+                new_kick_commands = None
+                if action.kick_command is not None:
+                    new_kick_commands = []
+                    for kick_to in action.kick_command:
+                        if kick_to is not None:
+                            new_kick_to = [
+                                BOARD_HEIGHT - 1 - kick_to[0],
+                                BOARD_WIDTH - 1 - kick_to[1]
+                            ]
+                        else:
+                            new_kick_to = None
+                        new_kick_commands.append(new_kick_to)
+                new_action = Act(new_move_command, new_kick_commands)
+                parsed_legalmoves.append(new_action)
+        else:
+            parsed_legalmoves = legal
+        return parsed_legalmoves
+
     def action(self, Board, legalmoves):
         not_lose = []
         legalmoves_p = self.parse_action(legalmoves, Board.turn)
