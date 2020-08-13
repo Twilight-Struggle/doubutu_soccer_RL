@@ -502,7 +502,7 @@ class BattleEnv:
                     print("Front Player wins!")
                 else:
                     print("Back Player wins!")
-                break
+                return winner
 
     def reset(self):
         self.Board.reset()
