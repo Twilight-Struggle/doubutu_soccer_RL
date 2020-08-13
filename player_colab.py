@@ -65,7 +65,8 @@ class GreedyPlayer:
                                         device=self.device,
                                         dtype=torch.long)
             legal_q = q.gather(1, next_actions)
-            return legalmoves_num_act_dict[legal_q.argmax(dim=1).item()]
+            return legalmoves_num_act_dict[legal_moves[legal_q.argmax(
+                dim=1).item()]]
 
 
 class Random:
