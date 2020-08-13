@@ -474,6 +474,40 @@ class DQNenv:
         return next_state, next_action, reward, done, skip_turn
 
 
+class BattleEnv:
+    def __init__(self, frontman, backman):
+        self.Board = Board()
+        self.Board.reset()
+        self.front = frontman
+        self.back = backman
+
+    def progress(self):
+        while True:
+            #self.Board.display()
+            legal_moves_l = self.Board.legal_moves()
+            if self.Board.turn == PlayPos.FRONTPLAYER:
+                now_player = self.front
+            elif self.Board.turn == PlayPos.BACKPLAYER:
+                now_player = self.back
+            while True:
+                if len(legal_moves_l) == 0:
+                    action = None
+                else:
+                    action = now_player.action(self.Board, legal_moves_l)
+                success, winner = self.Board.action_parser(action)
+                if success is True:
+                    break
+            if winner is not None:
+                if winner == PlayPos.FRONTPLAYER:
+                    print("Front Player wins!")
+                else:
+                    print("Back Player wins!")
+                break
+
+    def reset(self):
+        self.Board.reset()
+
+
 if __name__ == "__main__":
     env = DQNenv()
     while True:
