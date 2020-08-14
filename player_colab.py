@@ -69,7 +69,7 @@ class GreedyPlayer:
                 dim=1).item()]]
 
 
-class Random:
+class RandomPlayer:
     def __init__(self):
         pass
 
