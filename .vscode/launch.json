@@ -10,20 +10,7 @@
             "request": "launch",
             "program": "${file}",
             "console": "integratedTerminal",
-            "pythonPath": "${command:python.interpreterPath}"
-        },
-        {
-            "name": "ImageCutter",
-            "type": "python",
-            "request": "launch",
-            "program": "${file}",
-            "console": "integratedTerminal",
-            "args": [
-                "param.csv",
-                "paramN1.csv",
-                "2-3_L_T1_N.bin.8",
-                "test.bin"
-            ]
+            "python": "${command:python.interpreterPath}"
         }
     ]
 }
